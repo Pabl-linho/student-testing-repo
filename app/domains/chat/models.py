@@ -31,7 +31,7 @@ class RequestStatus(str, enum.Enum):
     REJECTED = "REJECTED"
 
 class Chat(Base):
-    tablename = "chats"
+    __tablename__ = "chats"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     # بالنسبة لملاحظتك: نعم، هكذا خير. جدول واحد للـ Chats يسهل بزاف الـ Queries للـ Front-end (Flutter)
@@ -46,7 +46,7 @@ class Chat(Base):
     messages: Mapped[list["Message"]] = relationship("Message", back_populates="chat", cascade="all, delete-orphan")
 
 class ChatMember(Base):    
-    tablename = "chat_members"
+    __tablename__ = "chat_members"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
@@ -62,7 +62,7 @@ class ChatMember(Base):
     user: Mapped["User"] = relationship("User") 
 
 class Message(Base):
-    tablename = "messages"
+    __tablename__ = "messages"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     chat_id: Mapped[int] = mapped_column(ForeignKey("chats.id", ondelete="CASCADE"), nullable=False)
@@ -80,7 +80,7 @@ class Message(Base):
     chat: Mapped["Chat"] = relationship("Chat", back_populates="messages")
 
 class ChatRequest(Base):
-    tablename = "chat_requests"
+    __tablename__ = "chat_requests"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True) # تم تصحيح هذا السطر
     sender_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

@@ -28,9 +28,7 @@ class MessageResponse(MessageBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-# ==========================================
-# Chat Schemas
-# ==========================================
+
 class ChatBase(BaseModel):
     chat_type: ChatType
     name: Optional[str] = Field(None, description="Group name (rah ykon empty fl direct chat)")
