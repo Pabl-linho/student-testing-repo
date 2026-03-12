@@ -7,7 +7,7 @@ from fastapi import WebSocket
 logger = logging.getLogger(__name__)
 
 class ConnectionManager:
-    def init(self):
+    def __init__(self):
         # نستعملو defaultdict(list) باش الكود يكون Clean أوتوماتيكيا يكريي List كي يجي يوزر جديد
         # key = user_id, value = list of WebSockets (multiple devices for the same user)
         self.active_connections: Dict[int, List[WebSocket]] = defaultdict(list)
