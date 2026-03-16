@@ -7,7 +7,7 @@ from sqlalchemy.orm import declarative_base
 # from the environment for staging/production handoff.
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:hsakHIYGHJOP9i897QWwq@localhost:5432/testing_db",
+    "",
 ).strip()
 
 engine_kwargs = {
