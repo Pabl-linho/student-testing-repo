@@ -34,17 +34,27 @@ class ConnectionManager:
             except ValueError:
                 # ws is sensitive to network drops. 
                 # إذا تقطعت الكونيكسيون فجأة في الـ Mobile وما لقيناش الـ socket، نتجاهلو الخطأ
-                pass
-
+                pass 
     async def send_personal_message(self, message: dict, user_id: int):
         if user_id in self.active_connections:
-            for connection in self.active_connections[user_id]:
-                await connection.send_json(message)
+            for connection in list(self.active_connections[user_id]):
+                try:
+                    await connection.send_json(message)
+                except Exception as exc:
+                    logger.warning("Failed to send websocket message to user %s: %s", user_id, exc)
+                    self.disconnect(connection, user_id)
 
     async def broadcast_to_group(self, message: dict, group_members_ids: List[int]):
         """يبعث رسالة لكامل أعضاء الـ Group باستعمال IDs تاعهم"""
         for user_id in group_members_ids:
             await self.send_personal_message(message, user_id)
+
+    async def broadcast_chat_event(self, event: str, payload: dict, group_members_ids: List[int]):
+        """يبعث event موحد للـ Front-end باش يفرق بين update/delete وغيرها."""
+        await self.broadcast_to_group(
+            {"event": event, "data": payload},
+            group_members_ids
+        )
 
 # Une seule instance تسيّر Online users في كامل الـ App
 manager = ConnectionManager()

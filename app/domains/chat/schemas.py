@@ -6,18 +6,35 @@ from datetime import datetime
 # نجبدو الـ Enums لي كرييناهم في الـ Models باش نستعملوهم للـ Validation
 from app.domains.chat.models import ChatType, MessageType, RequestStatus
 
+MAX_MESSAGE_LENGTH = 4000
 
-class MessageBase(BaseModel):
-    
-    content: str = Field(..., description="Message content")
+class MessageCreate(BaseModel):
+    # الـ Front-end (Flutter) يبعثلنا الـ chat_id فقط مع المحتوى
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    chat_id: int
+    content: str = Field(
+        ...,
+        min_length=1,
+        max_length=MAX_MESSAGE_LENGTH,
+        description="Message content"
+    )
     message_type: MessageType = Field(default=MessageType.TEXT)
 
-class MessageCreate(MessageBase):
-    # الـ Front-end (Flutter) يبعثلنا الـ chat_id فقط مع المحتوى
-    chat_id: int
+class MessageUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-class MessageResponse(MessageBase):
+    content: str = Field(
+        ...,
+        min_length=1,
+        max_length=MAX_MESSAGE_LENGTH,
+        description="Updated message content"
+    )
+
+class MessageResponse(BaseModel):
     # الـ JSON Response لي يرجع للـ Front-end
+    content: str
+    message_type: MessageType
     id: int
     chat_id: int
     sender_id: Optional[int]  # يقدر يكون Null إذا اليوزر تحذف

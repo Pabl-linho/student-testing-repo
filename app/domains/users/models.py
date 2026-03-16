@@ -2,10 +2,11 @@ import enum
 from datetime import datetime
 from sqlalchemy import String, Boolean, DateTime, Enum as SQLEnum, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql import func
 
+from sqlalchemy.sql import func
 from app.core.database import Base
 
+from app.domains.chat.models import ChatRequest , ChatMember , Message
 
 class GroupAddPermission(str, enum.Enum):          # UserPrivacy
     EVERYONE = "EVERYONE"
@@ -31,9 +32,40 @@ class User(Base):
         uselist=False, # 1 to 1 in SQLAlchemy
         cascade="all, delete-orphan"
     )
-    #?? --------- l import hna for create a relationship 
-    
-    # messages: Mapped[list["Message"]] = relationship("Message", back_populates="sender")
+    chat_memberships: Mapped[list["ChatMember"]] = relationship(
+        "ChatMember",
+        back_populates="user",
+        foreign_keys="ChatMember.user_id",
+        cascade="all, delete-orphan"
+    )
+    sent_messages: Mapped[list["Message"]] = relationship(
+        "Message",
+        back_populates="sender",
+        foreign_keys="Message.sender_id"
+    )
+    sent_chat_requests: Mapped[list["ChatRequest"]] = relationship(
+        "ChatRequest",
+        back_populates="sender",
+        foreign_keys="ChatRequest.sender_id",
+        cascade="all, delete-orphan"
+    )
+    received_chat_requests: Mapped[list["ChatRequest"]] = relationship(
+        "ChatRequest",
+        back_populates="receiver",
+        foreign_keys="ChatRequest.receiver_id",
+        cascade="all, delete-orphan"
+    )
+    contacts: Mapped[list["Contact"]] = relationship(
+        "Contact",
+        back_populates="user",
+        foreign_keys="Contact.user_id",
+        cascade="all, delete-orphan"
+    )
+    added_by: Mapped[list["Contact"]] = relationship(
+        "Contact",
+        back_populates="contact",
+        foreign_keys="Contact.contact_id"
+    )
 
 
 class PrivacySettings(Base):
@@ -65,4 +97,15 @@ class Contact(Base):
 
     __table_args__ = (
         UniqueConstraint('user_id', 'contact_id', name='uq_user_contact'),
+    )
+
+    user: Mapped["User"] = relationship(
+        "User",
+        foreign_keys=[user_id],
+        back_populates="contacts"
+    )
+    contact: Mapped["User"] = relationship(
+        "User",
+        foreign_keys=[contact_id],
+        back_populates="added_by"
     )

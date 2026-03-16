@@ -1,17 +1,30 @@
+import os
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 
-# TODO: Replace the following credentials with your PostgreSQL configuration.
-DATABASE_URL = " "
+# Default value is kept for local development, but the app can now be configured
+# from the environment for staging/production handoff.
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://postgres:hsakHIYGHJOP9i897QWwq@localhost:5432/testing_db",
+).strip()
+
+engine_kwargs = {
+    "echo": False,
+    "pool_pre_ping": True,
+}
+
+if not DATABASE_URL.startswith("sqlite"):
+    engine_kwargs.update(
+        {
+            "pool_size": 5,
+            "max_overflow": 10,
+        }
+    )
 
 # Create an asynchronous engine with connection pooling for better performance under load.
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=False,
-    pool_size=5,       # Number of connections to keep open
-    max_overflow=10    # Extra connections allowed during traffic spikes
-)
+engine = create_async_engine(DATABASE_URL, **engine_kwargs)
 
 # Factory for asynchronous sessions.
 AsyncSessionLocal = async_sessionmaker(
